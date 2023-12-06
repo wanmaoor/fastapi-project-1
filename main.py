@@ -1,4 +1,5 @@
 import uvicorn
+import query
 from fastapi import FastAPI
 from enum import Enum
 
