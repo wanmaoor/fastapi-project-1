@@ -1,6 +1,8 @@
 import uvicorn
 import query
+from pydantic import BaseModel
 from fastapi import FastAPI
+
 from enum import Enum
 
 
@@ -34,6 +36,18 @@ async def get_model(model_name: ModelName):
         return {"model_name": model_name, 'message': 'LeCNN all the images'}
 
     return {"model_name": model_name, "message": "Have some residuals"}
+
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+
+@app.post("/items")
+async def create_item(item: Item):
+    return {"status": "success", **item.model_dump()}
 
 
 if __name__ == '__main__':
