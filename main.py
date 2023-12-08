@@ -1,7 +1,7 @@
 import uvicorn
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi import FastAPI, Path, Body
-from typing import Annotated
+from typing import Annotated, List, Union
 from enum import Enum
 
 
@@ -16,7 +16,7 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    return {"message": "Hell"}
+    return {"message": "Hello"}
 
 
 @app.get("/hello/{name}")
@@ -36,11 +36,27 @@ async def get_model(model_name: ModelName):
     return {"model_name": model_name, "message": "Have some residuals"}
 
 
-class Item(BaseModel):
+class Image(BaseModel):
+    url: str
     name: str
-    description: str | None = None
-    price: float
-    tax: float | None = None
+
+
+class Item(BaseModel):
+    name: str = Field(example="Mac Studio")
+    description: str | None = Field(default=None, example="你的下一台电脑何必是电脑？")
+    price: float = Field(example=19999)
+    tax: float | None = Field(default=None, example=0.32)
+    tags: list = list[str]
+    image: Annotated[Image, Body(examples=[
+        {
+            "name": '示例图片',
+            "url": 'https://upload.wikimedia.org'
+        },
+        {
+            "name": "示例图片2",
+            "url": 'https://upload.wikimedia'
+        }
+    ])]
 
 
 class User(BaseModel):
