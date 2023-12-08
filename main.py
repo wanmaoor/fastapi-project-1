@@ -1,8 +1,7 @@
 import uvicorn
-import query
 from pydantic import BaseModel
-from fastapi import FastAPI
-
+from fastapi import FastAPI, Path, Body
+from typing import Annotated
 from enum import Enum
 
 
@@ -17,8 +16,7 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    print('执行/')
-    return {"message": "Hello"}
+    return {"message": "Hell"}
 
 
 @app.get("/hello/{name}")
@@ -45,11 +43,39 @@ class Item(BaseModel):
     tax: float | None = None
 
 
+class User(BaseModel):
+    username: str
+    full_name: str | None = None
+
+
 @app.post("/items")
 async def create_item(item: Item):
     return {"status": "success", **item.model_dump()}
 
 
+# query, path, request body 混合传参
+@app.put("/item/{item_id}")
+async def update_item(
+        importance: Annotated[int, Body()],
+        item_id: Annotated[
+            int, Path(title="The ID of the item to update", description="The ID of the item to", ge=0, le=1000)],
+        q: str | None = None,
+        item: Item | None = None,
+        user: User | None = None,
+):
+    results = {"item_id": item_id}
+    if q is not None:
+        results.update({"q": q})
+    if item is not None:
+        results.update({"item": item})
+    if user is not None:
+        results.update({"user": user})
+    if importance is not None:
+        results.update({"importance": importance})
+
+    return results
+
+
 if __name__ == '__main__':
     print('start server')
-    uvicorn.run('main:app', host='127.0.0.1', port=8888, reload=True)
+    uvicorn.run('main:app', host='127.0.0.1', port=8000, reload=True, reload_dirs='*')
