@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI, Path, Body, status, Form, UploadFile, File, HTTPException
 from typing import Annotated
 from enum import Enum
+from fastapi.encoders import jsonable_encoder
 
 
 class ModelName(int, Enum):
@@ -37,10 +38,11 @@ async def get_model(model_name: ModelName):
 
 
 class Item(BaseModel):
-    name: str
+    name: str | None = None
     description: str | None = None
-    price: float
-    tax: float | None = None
+    price: float | None = None
+    tax: float = 10.5
+    tags: list[str] = []
 
 
 class User(BaseModel):
@@ -77,6 +79,33 @@ async def read_item(item_id: str):
     return {"item": items.get(item_id)}
 
 
+db = {
+    "foo": {"name": "Foo", "price": 50.2},
+    "bar": {"name": "Bar", "description": "The bartenders", "price": 62, "tax": 20.2},
+    "baz": {"name": "Baz", "description": None, "price": 50.2, "tax": 10.5, "tags": []},
+}
+
+
+@app.patch("/items/{item_id}", response_model=Item)
+async def patch_item(item_id: str, item: Item):
+    # 获取原始数据
+    stored_item_data = db[item_id]
+    print(f'stored_item_data: {stored_item_data}')
+    stored_item_model = Item(**stored_item_data)
+    print(f"stored_item_model: {stored_item_model}")
+    # 拿到客户端的数据，同时不要默认值数据
+    update_data = item.dict(exclude_unset=True)
+    print(f'update_data: {update_data}')
+    # 将原有值和新数据进行合并
+    updated_item = stored_item_model.copy(update=update_data)
+    print(f"updated_item: {updated_item}")
+    # 将新数据转换为json格式存储
+    items[item_id] = jsonable_encoder(updated_item)
+    return updated_item
+
+fake_db = {}
+
+
 # query, path, request body 混合传参
 @app.put("/item/{item_id}")
 async def update_item(
@@ -96,7 +125,8 @@ async def update_item(
         results.update({"user": user})
     if importance is not None:
         results.update({"importance": importance})
-
+    fake_db[item_id] = jsonable_encoder(item)
+    print(f'fake_db: {fake_db}')
     return results
 
 
