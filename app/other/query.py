@@ -1,4 +1,4 @@
-from main import app
+from app.other.main import app
 from fastapi import Query, Path
 from typing import Annotated
 fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
