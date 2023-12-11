@@ -1,6 +1,6 @@
 import uvicorn
 from pydantic import BaseModel
-from fastapi import FastAPI, Path, Body
+from fastapi import FastAPI, Path, Body, status, Form, UploadFile, File
 from typing import Annotated
 from enum import Enum
 
@@ -48,7 +48,7 @@ class User(BaseModel):
     full_name: str | None = None
 
 
-@app.post("/items")
+@app.post("/items", status_code=status.HTTP_201_CREATED)
 async def create_item(item: Item):
     return {"status": "success", **item.model_dump()}
 
@@ -74,6 +74,21 @@ async def update_item(
         results.update({"importance": importance})
 
     return results
+
+
+@app.post("/login/")
+async def login(username: Annotated[str, Form()], password: Annotated[str, Form()]):
+    return {"username": username, "password": password}
+
+
+@app.post("/files/")
+async def create_file(file: Annotated[bytes, File()]):
+    return {"file_size": len(file)}
+
+
+@app.post("/uploadfile")
+async def create_upload_file(file: UploadFile):
+    return {"file_name": file.filename}
 
 
 if __name__ == '__main__':
