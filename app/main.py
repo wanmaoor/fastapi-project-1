@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.staticfiles import StaticFiles
 from .dependencies import get_query_token
 from .routers import items
 from .notification import main
@@ -53,6 +54,7 @@ app = FastAPI(
 
 app.include_router(items.router)
 app.include_router(main.router)
+app.mount("/", StaticFiles(directory="static"), name="")
 
 
 @app.get("/")
