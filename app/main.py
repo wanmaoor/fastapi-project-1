@@ -52,14 +52,12 @@ app = FastAPI(
     openapi_tags=tags_metadata
 )
 
-app.include_router(items.router)
-app.include_router(main.router)
-app.mount("/", StaticFiles(directory="static"), name="")
-
 
 @app.get("/")
 async def root():
     return {"message": "Hello Bigger Application"}
 
 
-print(f'current name: {__name__}')
+app.include_router(items.router)
+app.include_router(main.router)
+app.mount("/", StaticFiles(directory="static"), name="")
