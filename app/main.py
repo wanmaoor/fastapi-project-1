@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from .dependencies import get_query_token
 from .routers import items
 from .notification import main
+from .authentications import main as auth_main
 
 description = """
 ChimichangApp API helps you do awesome stuff. 🚀
@@ -48,7 +49,6 @@ app = FastAPI(
         "name": "Apache 2.0",
         "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
     },
-    dependencies=[Depends(get_query_token)],
     openapi_tags=tags_metadata
 )
 
@@ -60,4 +60,5 @@ async def root():
 
 app.include_router(items.router)
 app.include_router(main.router)
+app.include_router(auth_main.router)
 app.mount("/", StaticFiles(directory="static"), name="")
